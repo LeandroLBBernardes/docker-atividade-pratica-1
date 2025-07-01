@@ -1,0 +1,59 @@
+services:
+  postgresdb:
+    image: postgres:latest
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: secretpass
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - game-guess-network
+
+  backend:
+    build: .
+    restart: unless-stopped
+    environment:
+      FLASK_ENV: production
+      FLASK_APP: run.py
+      FLASK_DB_TYPE: postgres
+      FLASK_DB_USER: postgres
+      FLASK_DB_NAME: postgres
+      FLASK_DB_PASSWORD: secretpass
+      FLASK_DB_HOST: postgresdb
+      FLASK_DB_PORT: 5432
+    ports:
+      - "5000"
+    networks:
+      - game-guess-network
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: frontend
+      args:
+        REACT_APP_BACKEND_URL: http://localhost:8080/api
+    restart: unless-stopped
+    ports:
+      - "8080:80" 
+    depends_on:
+      - backend
+    networks:
+      - game-guess-network
+
+volumes:
+  postgres_data:
+
+networks:
+  game-guess-network:
+    driver: bridge

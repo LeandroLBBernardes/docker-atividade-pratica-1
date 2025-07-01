@@ -1,0 +1,4 @@
+frontend/
+tests/
+requirements-dev.txt
+requirements-freeze.txt

@@ -118,3 +118,12 @@ Optei por não usar um script externo (`start-backend.sh`) como entrypoint.
 Em vez disso, defini o comando flask run --host=0.0.0.0 --port=5000 diretamente no Dockerfile usando a instrução CMD, e configurei as variáveis de ambiente no próprio docker-compose.yml.
 
 Essa abordagem torna o processo mais flexivel na inicialização e evita a necessidade de alterar arquivos dentro da imagem para ajustar variáveis ou comandos, facilitando atualizações, manutenções e futuros testes locais independente da máquina ou como está configurado o `start-backend.sh`.
+
+### Arquivo nginx.conf
+
+O arquivo `nginx.conf` que está na pasta frontend, representa a configuração do NGINX para servir o frontend e redirecionar as chamadas da API para o backend. Ele faz duas coisas principais:
+
+- **Serve o frontend estático** a partir da pasta `/usr/share/nginx/html` especificada na imagem Docker, onde copio o build da aplicação frontend.
+- **Proxy reverso para a API**: requisições que começam com `/api` são redirecionadas para `http://backend:5000`, container do serviço backend onde exponho pela porta 5000 no compose.
+
+Permitindo que compartilhe a mesma porta `8080`.
